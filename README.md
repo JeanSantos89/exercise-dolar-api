@@ -1,6 +1,6 @@
-# Automação de Testes API PTAX - Banco Central (Postman)
+# Automação de Testes API - Banco Central (Postman)
 
-## 🎯 Objetivo
+## Objetivo
 Este projeto contém duas automações de teste desenvolvidas no **Postman** para validar a API PTAX do Banco Central do Brasil.
 As validações garantem:
 
@@ -13,7 +13,7 @@ As validações garantem:
 
 ---
 
-## 🚀 Automação 1 – Cotação do Dólar por Dia
+## Automação 1 – Cotação do Dólar por Dia
 
 ### **Endpoint**
 `GET https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarDia(dataCotacao=@dataCotacao)?@dataCotacao='MM-DD-YYYY'&$format=text/plain`
@@ -32,7 +32,7 @@ As validações garantem:
 
 ---
 
-## 📈 Automação 2 – Cotação do Dólar por Período
+## Automação 2 – Cotação do Dólar por Período
 
 ### **Endpoint**
 `GET https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@dataInicial='MM-DD-YYYY'&@dataFinalCotacao='MM-DD-YYYY'&$format=text/plain`
@@ -52,7 +52,7 @@ As validações garantem:
 
 ---
 
-## 🛠️ Como Executar
+## Como Executar
 
 ### **Passos**
 1. Importar a requisição no **Postman**.
