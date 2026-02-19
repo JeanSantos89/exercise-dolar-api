@@ -1,0 +1,319 @@
+{
+  "info": {
+    "_postman_id": "7397dd77-700f-4d7a-aafe-4da30a708db2",
+    "name": "Exercise Dolar API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "44456415"
+  },
+  "item": [
+    {
+      "name": "CotacaoDolar",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Testa se o status HTTP da resposta é 200 (OK)",
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// Só executa as próximas validações se o status for 200",
+              "if (pm.response.code === 200) {",
+              "",
+              "    // Obtém o corpo da resposta como texto e remove espaços extras no início e fim",
+              "    const responseText = pm.response.text().trim();",
+              "",
+              "    // Verifica se o corpo da resposta não está vazio",
+              "    pm.test(\"Response body is not empty\", function () {",
+              "        pm.expect(responseText).to.not.be.empty;",
+              "    });",
+              "",
+              "    // Divide o conteúdo em linhas usando a quebra de linha",
+              "    const lines = responseText.split(\"\\n\");",
+              "",
+              "    // ==============================",
+              "    // VALIDAÇÃO: erro quando só vem o cabeçalho",
+              "    // ==============================",
+              "    pm.test(\"Resposta não deve conter apenas o cabeçalho\", function () {",
+              "",
+              "        // Caso 1: resposta contém exatamente o texto do cabeçalho (sem quebra de linha)",
+              "        const apenasCabecalhoSemQuebra = ",
+              "            responseText === \"cotacaoCompra,cotacaoVenda,dataHoraCotacao\";",
+              "",
+              "        // Caso 2: existe apenas 1 linha e ela é igual ao cabeçalho",
+              "        const apenasCabecalhoUmaLinha = (",
+              "            lines.length === 1 &&",
+              "            lines[0] === \"cotacaoCompra,cotacaoVenda,dataHoraCotacao\"",
+              "        );",
+              "",
+              "        // Se qualquer um dos casos for verdadeiro, o teste deve falhar",
+              "        pm.expect(",
+              "            apenasCabecalhoSemQuebra || apenasCabecalhoUmaLinha,",
+              "            \"API retornou apenas o cabeçalho, sem dados de cotação\"",
+              "        ).to.be.false;",
+              "    });",
+              "",
+              "    // Garante que existam pelo menos 2 linhas (cabeçalho + pelo menos 1 linha de dados)",
+              "    pm.test(\"Response has at least 2 lines (header + data)\", function () {",
+              "        pm.expect(lines.length).to.be.at.least(2);",
+              "    });",
+              "",
+              "    // Só continua se realmente houver pelo menos 2 linhas",
+              "    if (lines.length >= 2) {",
+              "",
+              "        // Pega a segunda linha (primeira linha de dados)",
+              "        const dataRow = lines[1];",
+              "",
+              "        // Extrai todos os valores entre aspas usando regex",
+              "        const matches = dataRow.match(/\"([^\"]*)\"/g);",
+              "",
+              "        // Verifica se a linha contém valores entre aspas",
+              "        pm.test(\"Data row contains quoted values\", function () {",
+              "            pm.expect(matches).to.not.be.null;",
+              "            pm.expect(matches.length).to.be.at.least(2);",
+              "        });",
+              "",
+              "        // Só continua se encontrou pelo menos dois valores (compra e venda)",
+              "        if (matches && matches.length >= 2) {",
+              "",
+              "            // Remove as aspas dos dois primeiros valores",
+              "            const cotacaoCompraStr = matches[0].replace(/\"/g, \"\");",
+              "            const cotacaoVendaStr = matches[1].replace(/\"/g, \"\");",
+              "",
+              "            // Verifica se os valores não estão vazios",
+              "            pm.test(\"cotacaoCompra string is not empty\", function () {",
+              "                pm.expect(cotacaoCompraStr).to.not.be.empty;",
+              "            });",
+              "",
+              "            pm.test(\"cotacaoVenda string is not empty\", function () {",
+              "                pm.expect(cotacaoVendaStr).to.not.be.empty;",
+              "            });",
+              "",
+              "            // Converte os valores para número (substitui vírgula por ponto para parseFloat funcionar)",
+              "            const cotacaoCompra = parseFloat(cotacaoCompraStr.replace(\",\", \".\"));",
+              "            const cotacaoVenda = parseFloat(cotacaoVendaStr.replace(\",\", \".\"));",
+              "",
+              "            // Verifica se os valores convertidos são números válidos",
+              "            pm.test(\"cotacaoCompra is a valid number\", function () {",
+              "                pm.expect(isNaN(cotacaoCompra)).to.be.false;",
+              "            });",
+              "",
+              "            pm.test(\"cotacaoVenda is a valid number\", function () {",
+              "                pm.expect(isNaN(cotacaoVenda)).to.be.false;",
+              "            });",
+              "",
+              "            // Verifica se os valores são maiores que zero",
+              "            pm.test(\"cotacaoCompra é positivo\", function () {",
+              "                pm.expect(cotacaoCompra).to.be.above(0);",
+              "            });",
+              "",
+              "            pm.test(\"cotacaoVenda é positivo\", function () {",
+              "                pm.expect(cotacaoVenda).to.be.above(0);",
+              "            });",
+              "        }",
+              "    }",
+              "}",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarDia(dataCotacao=@dataCotacao)?@dataCotacao='10-22-2025'&$format=text/plain",
+          "protocol": "https",
+          "host": [
+            "olinda",
+            "bcb",
+            "gov",
+            "br"
+          ],
+          "path": [
+            "olinda",
+            "servico",
+            "PTAX",
+            "versao",
+            "v1",
+            "odata",
+            "CotacaoDolarDia(dataCotacao=@dataCotacao)"
+          ],
+          "query": [
+            {
+              "key": "@dataCotacao",
+              "value": "'10-22-2025'"
+            },
+            {
+              "key": "$format",
+              "value": "text/plain"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "CotacaoDolarPeriodo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//  1. Teste básico de status\r",
+              "pm.test(\"Status 200 - Periodo\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "//  2. Ler e preparar o corpo\r",
+              "const body = pm.response.text().trim();\r",
+              "const linhas = body.split(\"\\n\").map(l => l.trim()).filter(l => l.length > 0);\r",
+              "\r",
+              "// Primeira linha é o cabeçalho\r",
+              "pm.test(\"Retornou múltiplos dias\", function () {\r",
+              "    pm.expect(linhas.length, \"Quantidade de linhas (inclui cabeçalho)\").to.be.above(2);\r",
+              "});\r",
+              "\r",
+              "//  3. Função auxiliar para extrair a cotação de venda\r",
+              "function extrairVenda(linha, indexLinha) {\r",
+              "    // Exemplo de linha:\r",
+              "    // \"4,1482\",\"4,1488\",2019-10-15 13:09:38.123\r",
+              "\r",
+              "    // Quebrar por vírgula\r",
+              "    const partes = linha.split(\",\");\r",
+              "\r",
+              "    // Precisamos pelo menos de 4 partes: \"4 , 1482\" , \"4 , 1488\"\r",
+              "    if (partes.length < 4) {\r",
+              "        throw new Error(`Linha ${indexLinha} mal formatada (partes < 4): \"${linha}\"`);\r",
+              "    }\r",
+              "\r",
+              "    // venda é composta pelas partes 2 e 3 (índices 2 e 3)\r",
+              "    let vendaStr = partes[2] + \",\" + partes[3];\r",
+              "\r",
+              "    // Remover aspas duplas\r",
+              "    vendaStr = vendaStr.replace(/\"/g, \"\");\r",
+              "\r",
+              "    // Trocar vírgula decimal por ponto\r",
+              "    vendaStr = vendaStr.replace(\",\", \".\");\r",
+              "\r",
+              "    const venda = parseFloat(vendaStr);\r",
+              "\r",
+              "    if (isNaN(venda)) {\r",
+              "        throw new Error(`Linha ${indexLinha} possui valor de venda inválido: \"${vendaStr}\" (linha completa: \"${linha}\")`);\r",
+              "    }\r",
+              "\r",
+              "    return venda;\r",
+              "}\r",
+              "\r",
+              "//  4. Percorrer linhas de dados e coletar valores de venda\r",
+              "let valoresVenda = [];\r",
+              "\r",
+              "for (let i = 1; i < linhas.length; i++) { // começa em 1 para pular o cabeçalho\r",
+              "    const linha = linhas[i];\r",
+              "\r",
+              "    const venda = extrairVenda(linha, i);\r",
+              "\r",
+              "    // Teste por linha: valor não-negativo\r",
+              "    pm.test(`Valor de venda válido na linha ${i}`, function () {\r",
+              "        pm.expect(venda, `Valor de venda na linha ${i}`).to.be.at.least(0);\r",
+              "    });\r",
+              "\r",
+              "    valoresVenda.push(venda);\r",
+              "}\r",
+              "\r",
+              "// Garantir que temos pelo menos 2 valores para comparar tendência\r",
+              "pm.test(\"Existe histórico suficiente de valores de venda\", function () {\r",
+              "    pm.expect(valoresVenda.length, \"Quantidade de registros de venda\").to.be.at.least(2);\r",
+              "});\r",
+              "\r",
+              "//  5. Cálculo de variação e tendência\r",
+              "const primeiro = valoresVenda[0];\r",
+              "const ultimo = valoresVenda[valoresVenda.length - 1];\r",
+              "\r",
+              "const variacao = ((ultimo - primeiro) / primeiro) * 100;\r",
+              "\r",
+              "// Logs úteis (aparecem no console do Postman)\r",
+              "console.log(\"Primeiro:\", primeiro);\r",
+              "console.log(\"Último:\", ultimo);\r",
+              "console.log(\"Variação %:\", variacao.toFixed(2));\r",
+              "\r",
+              "//  TESTE PRINCIPAL DE NEGÓCIO: tendência\r",
+              "pm.test(\"Sistema identifica tendência corretamente\", function () {\r",
+              "\r",
+              "    if (ultimo > primeiro) {\r",
+              "        console.log(\"TENDÊNCIA DE ALTA\");\r",
+              "        pm.expect(ultimo, \"Último valor deve ser maior que o primeiro\").to.be.above(primeiro);\r",
+              "\r",
+              "    } else if (ultimo < primeiro) {\r",
+              "        console.log(\"TENDÊNCIA DE QUEDA\");\r",
+              "        pm.expect(ultimo, \"Último valor deve ser menor que o primeiro\").to.be.below(primeiro);\r",
+              "\r",
+              "    } else {\r",
+              "        console.log(\"SEM VARIAÇÃO\");\r",
+              "        pm.expect(ultimo, \"Último valor deve ser igual ao primeiro\").to.eql(primeiro);\r",
+              "    }\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@dataInicial='10-15-2019'&@dataFinalCotacao='10-22-2019'&$format=text/plain",
+          "protocol": "https",
+          "host": [
+            "olinda",
+            "bcb",
+            "gov",
+            "br"
+          ],
+          "path": [
+            "olinda",
+            "servico",
+            "PTAX",
+            "versao",
+            "v1",
+            "odata",
+            "CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)"
+          ],
+          "query": [
+            {
+              "key": "@dataInicial",
+              "value": "'10-15-2019'"
+            },
+            {
+              "key": "@dataFinalCotacao",
+              "value": "'10-22-2019'"
+            },
+            {
+              "key": "$format",
+              "value": "text/plain"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
