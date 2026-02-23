@@ -60,3 +60,4 @@ As validações garantem:
 3. Ajustar as datas nos parâmetros da URL conforme necessário.
 4. Executar a requisição (**Send**).
 5. Verificar os resultados na aba **Test Results**.
+6. Para a Automação 2, verificar o resultado em **Test Results** e **Console Postman**
